@@ -1,0 +1,7 @@
+{
+   "has_cam" : "yes",
+   "has_music" : "no",
+   "has_lightshow" : "no",
+   "has_boombox" : "yes",
+   "uses_ble" : "yes"
+}

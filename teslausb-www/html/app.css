@@ -1,0 +1,985 @@
+/*
+ * App shell and core screens for the TeslaUSB web UI.
+ * Loaded after the page's own styles, so it wins where they overlap.
+ * Self-contained on purpose: no web fonts or CDN assets, because the UI has to
+ * work when the phone reaches the Pi without an internet connection.
+ */
+
+:root {
+  color-scheme: light dark;
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --surface-2: #f1f2f5;
+  --surface-hover: #e9ebf0;
+  --text: #15171c;
+  --text-2: #5d6371;
+  --border: #e1e4ea;
+  --accent: #3e6ae1;
+  --accent-text: #ffffff;
+  --accent-soft: rgba(62, 106, 225, 0.12);
+  --ok: #16a34a;
+  --ok-soft: rgba(22, 163, 74, 0.12);
+  --warn: #d97706;
+  --warn-soft: rgba(217, 119, 6, 0.14);
+  --bad: #dc2626;
+  --bad-soft: rgba(220, 38, 38, 0.12);
+  --radius: 14px;
+  --radius-sm: 10px;
+  --shadow: 0 1px 2px rgba(16, 24, 40, 0.05), 0 1px 3px rgba(16, 24, 40, 0.08);
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+  --appbar-h: 56px;
+  --nav-w: 220px;
+  --bottomnav-h: 0px;
+  --subnav-h: 0px;
+  --content-left: var(--nav-w);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0e1014;
+    --surface: #171a20;
+    --surface-2: #1e2129;
+    --surface-hover: #262a33;
+    --text: #e9ebf0;
+    --text-2: #9aa0ad;
+    --border: #2a2e38;
+    --accent: #6b8eff;
+    --accent-text: #0e1014;
+    --accent-soft: rgba(107, 142, 255, 0.16);
+    --ok: #34d399;
+    --ok-soft: rgba(52, 211, 153, 0.14);
+    --warn: #fbbf24;
+    --warn-soft: rgba(251, 191, 36, 0.14);
+    --bad: #f87171;
+    --bad-soft: rgba(248, 113, 113, 0.14);
+    --shadow: none;
+  }
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html, body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tabholder {
+  background: var(--bg);
+}
+
+body.has-subnav {
+  --subnav-h: 52px;
+}
+
+/* ---------- app bar ---------- */
+
+.appbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--appbar-h);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  box-sizing: border-box;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  z-index: 30;
+}
+
+.appbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 650;
+  font-size: 17px;
+  letter-spacing: 0.2px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.appbar-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+.appbar-logo svg {
+  width: 20px;
+  height: 20px;
+}
+
+.appbar-title {
+  display: none;
+  font-weight: 600;
+  font-size: 17px;
+}
+
+.appbar-spacer {
+  flex: 1;
+}
+
+.livepill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-size: 13px;
+  color: var(--text-2);
+  background: var(--surface-2);
+  white-space: nowrap;
+}
+
+.livepill::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-2);
+}
+
+.livepill.live::before {
+  background: var(--ok);
+  box-shadow: 0 0 0 3px var(--ok-soft);
+}
+
+.livepill.stale::before {
+  background: var(--warn);
+}
+
+/* ---------- main navigation ---------- */
+
+.appnav {
+  position: fixed;
+  top: var(--appbar-h);
+  bottom: 0;
+  left: 0;
+  width: var(--nav-w);
+  box-sizing: border-box;
+  padding: 14px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  z-index: 25;
+}
+
+.navitem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border-radius: var(--radius-sm);
+  color: var(--text-2);
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 550;
+}
+
+.navitem[hidden] {
+  display: none;
+}
+
+.navitem svg {
+  width: 22px;
+  height: 22px;
+  flex: none;
+}
+
+.navitem:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.navitem.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.appnav-footer {
+  margin-top: auto;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.appnav-footer a {
+  color: inherit;
+}
+
+/* ---------- section sub-navigation (segmented control) ---------- */
+
+.subnavbar {
+  position: fixed;
+  top: var(--appbar-h);
+  left: var(--content-left);
+  right: 0;
+  height: 52px;
+  box-sizing: border-box;
+  display: none;
+  align-items: center;
+  gap: 6px;
+  padding: 0 16px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  scrollbar-width: none;
+  z-index: 20;
+}
+
+.subnavbar.active {
+  display: flex;
+}
+
+.subnavitem {
+  flex: none;
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 550;
+  color: var(--text-2);
+  text-decoration: none;
+  border: 1px solid transparent;
+}
+
+.subnavitem:hover {
+  color: var(--text);
+  background: var(--surface-hover);
+}
+
+.subnavitem.active {
+  color: var(--text);
+  background: var(--surface);
+  border-color: var(--border);
+  box-shadow: var(--shadow);
+}
+
+/* ---------- content panels ---------- */
+
+.tab {
+  position: fixed;
+  top: calc(var(--appbar-h) + var(--subnav-h));
+  bottom: var(--bottomnav-h);
+  left: var(--content-left);
+  right: 0;
+  width: auto;
+  visibility: hidden;
+  background: var(--bg);
+  overflow: auto;
+}
+
+.tab.active {
+  visibility: visible;
+}
+
+/* the clip player positions its controls with position:fixed;
+   make the panel their containing block so they stay inside it */
+.tab.content7 {
+  transform: translateZ(0);
+  overflow: hidden;
+  background: #333;
+}
+
+.page {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 20px 20px 32px;
+  box-sizing: border-box;
+}
+
+.section-title {
+  margin: 26px 2px 10px;
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+
+.section-title:first-child {
+  margin-top: 4px;
+}
+
+/* ---------- cards ---------- */
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 14px;
+}
+
+.card[hidden] {
+  display: none;
+}
+
+.card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.card-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  flex: none;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.card-icon svg {
+  width: 19px;
+  height: 19px;
+}
+
+.card-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-2);
+  flex: 1;
+}
+
+.card-value {
+  font-size: 22px;
+  font-weight: 650;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.card-detail {
+  margin-top: 5px;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--text-2);
+}
+
+.card.state-ok .card-icon { background: var(--ok-soft); color: var(--ok); }
+.card.state-warn .card-icon { background: var(--warn-soft); color: var(--warn); }
+.card.state-bad .card-icon { background: var(--bad-soft); color: var(--bad); }
+
+.chip {
+  font-size: 12px;
+  font-weight: 650;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text-2);
+}
+
+.chip[hidden] { display: none; }
+.chip.ok { background: var(--ok-soft); color: var(--ok); }
+.chip.warn { background: var(--warn-soft); color: var(--warn); }
+.chip.bad { background: var(--bad-soft); color: var(--bad); }
+
+.meter {
+  margin-top: 12px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.meter > span {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  transition: width 0.4s ease;
+}
+
+.meter.warn > span { background: var(--warn); }
+.meter.bad > span { background: var(--bad); }
+
+.signalbars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 18px;
+  margin-left: 8px;
+  vertical-align: -1px;
+}
+
+.signalbars i {
+  width: 5px;
+  border-radius: 2px;
+  background: var(--border);
+}
+
+.signalbars i:nth-child(1) { height: 25%; }
+.signalbars i:nth-child(2) { height: 50%; }
+.signalbars i:nth-child(3) { height: 75%; }
+.signalbars i:nth-child(4) { height: 100%; }
+.signalbars i.on { background: var(--accent); }
+
+/* ---------- home: status banner ---------- */
+
+.hero {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  margin-bottom: 14px;
+}
+
+.hero-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  flex: none;
+  background: var(--surface-2);
+  color: var(--text-2);
+}
+
+.hero-icon svg {
+  width: 28px;
+  height: 28px;
+}
+
+.hero.state-ok .hero-icon { background: var(--ok-soft); color: var(--ok); }
+.hero.state-warn .hero-icon { background: var(--warn-soft); color: var(--warn); }
+.hero.state-bad .hero-icon { background: var(--bad-soft); color: var(--bad); }
+
+.hero-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.hero-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.hero-detail {
+  margin: 4px 0 0;
+  font-size: 14.5px;
+  color: var(--text-2);
+  line-height: 1.45;
+}
+
+.hero-action[hidden] {
+  display: none;
+}
+
+.quickactions .btn.noclips,
+.quickactions .btn[hidden] {
+  display: none;
+}
+
+.quickactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+/* ---------- buttons ---------- */
+
+.btn,
+.tab button.group1,
+.tab button.group2 {
+  -webkit-appearance: none;
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 14.5px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  width: auto;
+  white-space: nowrap;
+}
+
+.btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.btn:hover,
+.tab button.group1:hover,
+.tab button.group2:hover {
+  background: var(--surface-hover);
+}
+
+.btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+.btn.primary:hover {
+  filter: brightness(1.08);
+  background: var(--accent);
+}
+
+.btn.danger,
+.tab button.group2.danger {
+  color: var(--bad);
+}
+
+.btn:disabled,
+.tab button.group1:disabled,
+.tab button.group2:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* ---------- system: status list and actions ---------- */
+
+.statuslist.pistatus {
+  border: 1px solid var(--border);
+  margin: 0;
+  padding: 4px 16px;
+  font-size: 14.5px;
+  line-height: 1.4;
+}
+
+.statuslist.pistatus > div {
+  padding: 10px 0;
+}
+
+/* the first row (uptime) is always shown; rows the page hides use display:none */
+.statuslist.pistatus > div:not(:first-child) {
+  border-top: 1px solid var(--border);
+}
+
+.statuslist.pistatus > div:empty {
+  display: none;
+}
+
+.statuslist .status_throttled {
+  color: var(--warn);
+}
+
+.actionlist {
+  padding: 0 16px;
+}
+
+.action-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.action-row:last-child {
+  border-bottom: none;
+}
+
+.action-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.action-title {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.action-desc {
+  margin-top: 3px;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--text-2);
+}
+
+.action-msg {
+  margin-top: 6px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.action-msg:empty {
+  display: none;
+}
+
+.action-row #speedspinner {
+  margin: 0 !important;
+}
+
+/* ---------- logs ---------- */
+
+.logview {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 16px 20px 16px;
+  gap: 12px;
+}
+
+.logview .mypre {
+  flex: 1;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 14px 16px;
+  box-sizing: border-box;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12.5px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.logtoolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* ---------- dialog and toast ---------- */
+
+.appdialog {
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 0;
+  width: min(420px, calc(100vw - 32px));
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+}
+
+.appdialog::backdrop {
+  background: rgba(10, 12, 16, 0.55);
+}
+
+.appdialog-body {
+  padding: 22px 22px 8px;
+}
+
+.appdialog h2 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+.appdialog p {
+  margin: 0;
+  color: var(--text-2);
+  font-size: 14.5px;
+  line-height: 1.5;
+}
+
+.appdialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 22px 20px;
+}
+
+.appdialog .btn.primary.danger {
+  background: var(--bad);
+  border-color: var(--bad);
+  color: #fff;
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--bottomnav-h) + 24px);
+  transform: translate(-50%, 20px);
+  padding: 11px 18px;
+  border-radius: 12px;
+  background: var(--text);
+  color: var(--bg);
+  font-size: 14px;
+  font-weight: 600;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s, transform 0.25s;
+  z-index: 50;
+}
+
+.toast.shown {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* the legacy settings overlay, restyled */
+.modaloverlay {
+  background-color: rgba(10, 12, 16, 0.55) !important;
+  z-index: 40 !important;
+}
+
+.modalcontent {
+  background: var(--surface) !important;
+  color: var(--text);
+  border: 1px solid var(--border) !important;
+  border-radius: 18px;
+}
+
+/* ---------- file browser (Drives) ---------- */
+
+/* its new-folder/upload buttons float at the bottom of the screen; keep them above the phone tab bar */
+.fb-buttonbar {
+  bottom: calc(24px + var(--bottomnav-h));
+}
+
+/* ---------- file browser (Drives) in dark mode ---------- */
+
+@media (prefers-color-scheme: dark) {
+  .fb-treediv,
+  .fb-filesdiv,
+  .fb-diskinfo-outer {
+    background: var(--surface) !important;
+    color: var(--text);
+  }
+
+  .fb-tree summary,
+  .fb-fileentry,
+  .fb-direntry,
+  .fb-treerootpath,
+  .fb-dirpath {
+    color: var(--text);
+  }
+
+  .fb-crumb {
+    color: var(--accent);
+  }
+
+  .fb-fileentry.fb-selected,
+  .fb-direntry.fb-selected {
+    color: var(--text);
+    background: var(--accent-soft);
+  }
+
+  .fb-diskinfo-inner {
+    color: var(--text-2);
+  }
+
+  .fb-diskinfo {
+    background: var(--surface-2);
+    border-color: var(--border);
+  }
+
+  .fb-splitter,
+  .fb-splitterflag {
+    background: var(--surface-2);
+    border-color: var(--border);
+  }
+}
+
+/* ---------- phones ---------- */
+
+@media screen and (max-width: 824px) {
+  :root {
+    --appbar-h: 54px;
+    --bottomnav-h: calc(64px + env(safe-area-inset-bottom, 0px));
+    --content-left: 0px;
+  }
+
+  .appbar {
+    padding: 0 14px;
+  }
+
+  .appbar-brand .appbar-name {
+    display: none;
+  }
+
+  .appbar-title {
+    display: block;
+  }
+
+  .appnav {
+    top: auto;
+    bottom: 0;
+    width: auto;
+    right: 0;
+    height: var(--bottomnav-h);
+    padding: 6px 6px env(safe-area-inset-bottom, 0px);
+    flex-direction: row;
+    gap: 0;
+    border-right: none;
+    border-top: 1px solid var(--border);
+  }
+
+  .navitem {
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
+    gap: 3px;
+    padding: 6px 2px;
+    font-size: 11.5px;
+    font-weight: 600;
+  }
+
+  .navitem.active {
+    background: none;
+  }
+
+  .navitem.active svg {
+    background: var(--accent-soft);
+    border-radius: 999px;
+  }
+
+  .navitem svg {
+    width: 40px;
+    height: 26px;
+    padding: 2px 0;
+    box-sizing: border-box;
+  }
+
+  .appnav-footer {
+    display: none;
+  }
+
+  .page {
+    padding: 14px 14px 28px;
+  }
+
+  .hero {
+    padding: 16px;
+    flex-wrap: wrap;
+  }
+
+  .hero-title {
+    font-size: 19px;
+  }
+
+  .cards {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .card {
+    padding: 14px;
+  }
+
+  .card-value {
+    font-size: 18px;
+  }
+
+  .card-detail {
+    font-size: 12.5px;
+  }
+
+  .action-row {
+    flex-wrap: wrap;
+  }
+
+  .action-row > button {
+    width: 100% !important;
+  }
+
+  .logview {
+    padding: 12px;
+  }
+}
+
+@media screen and (max-width: 520px) {
+  .card {
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  .card-head {
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .card-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+  }
+
+  .card-icon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .card-label {
+    font-size: 13px;
+  }
+
+  .card-value {
+    font-size: 17px;
+  }
+
+  .card-detail {
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .signalbars {
+    height: 14px;
+    gap: 2px;
+  }
+
+  .signalbars i {
+    width: 4px;
+  }
+
+  .hero-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 13px;
+  }
+
+  .hero-icon svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .hero-title {
+    font-size: 18px;
+  }
+
+  .hero-detail {
+    font-size: 13.5px;
+  }
+
+  .quickactions .btn {
+    flex: 1 1 auto;
+  }
+}
+
+@media screen and (max-width: 339px) {
+  .cards {
+    grid-template-columns: 1fr;
+  }
+}

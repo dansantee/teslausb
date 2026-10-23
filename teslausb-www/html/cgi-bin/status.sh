@@ -46,6 +46,20 @@ fi
 
 read -r -d ' ' ut < /proc/uptime
 
+# outcome of recent archive runs, written by archiveloop (see run/archive-status.sh)
+declare -A archive=()
+archive_status_file="${ARCHIVE_STATUS_FILE:-/mutable/archive_status}"
+if [ -r "$archive_status_file" ]
+then
+  while IFS='=' read -r key value
+  do
+    if [[ $key =~ ^[A-Za-z0-9_]+$ && $value =~ ^[A-Za-z0-9_.-]*$ ]]
+    then
+      archive[$key]=$value
+    fi
+  done < "$archive_status_file"
+fi
+
 fan_speed=$(cat /sys/devices/platform/cooling_fan/hwmon/*/fan1_input 2>/dev/null || echo "N/A")
 
 external_5v=$(sudo -n vcgencmd pmic_read_adc EXT5V_V 2>/dev/null) && external_5v=${external_5v##*=} && external_5v=${external_5v%V} || external_5v="N/A"
@@ -66,6 +80,11 @@ Content-type: application/json
    "snapshot_newest": "$newestsnapshot",
    $(eval "$(stat --file-system --format='echo -e \"total_space\": \"$((%b*%S))\",\\\n\ \ \ \"free_space\": \"$((%f*%S))\",' /backingfiles/.)")
    "uptime": "$ut",
+   "last_check": "${archive[last_check]:-}",
+   "last_check_result": "${archive[last_check_result]:-}",
+   "last_copy": "${archive[last_copy]:-}",
+   "last_copy_files": "${archive[last_copy_files]:-}",
+   "last_copy_result": "${archive[last_copy_result]:-}",
    "drives_active": "$drives_active",
    "wifi_ssid": "$wifi_ssid",
    "wifi_freq": "$wifi_freq",

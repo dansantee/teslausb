@@ -50,6 +50,14 @@ export MUSIC_MOUNT=/mnt/music
 # read the setup variables and define other environment variables and functions
 source /root/bin/envsetup.sh
 
+# records the outcome of archive runs for the web UI
+if [ -f /root/bin/archive-status.sh ]
+then
+  source /root/bin/archive-status.sh
+else
+  function archive_status_set () { :; }
+fi
+
 # led triggers may have been built as modules, so try
 # to load them
 if ! grep -q timer "$STATUSLED/trigger"
@@ -616,6 +624,12 @@ function archive_teslacam_clips () {
     message+=" in $(convert_seconds_to_nice_time $delta)"
     /root/bin/send-push-message "$NOTIFICATION_TITLE:" "${message}" finish
 
+    local copy_result=ok
+    [ "$archive_success" = "true" ] || copy_result=error
+    archive_status_set last_copy "$end_ts" \
+                       last_copy_files "$((sentry_archived + trackmode_archived))" \
+                       last_copy_result "$copy_result" || log "failed to record archive status"
+
     if [ -e /tmp/archive-error.log ]
     then
       cat /tmp/archive-error.log >> ${LOG_FILE}
@@ -637,6 +651,9 @@ function archive_teslacam_clips () {
   else
     log "Archive not reachable, assuming user drove away, skipping cleaning step"
   fi
+
+  # report the copy result to the caller instead of the status of the last log call
+  [ "$archive_success" = "true" ]
 }
 
 function copy_music_files () {
@@ -662,6 +679,7 @@ function archive_clips () {
   if ! /root/bin/connect-archive.sh
   then
     log "Couldn't connect archive, skipping archive step."
+    archive_status_set last_check "$(date +%s)" last_check_result unreachable || log "failed to record archive status"
     return
   fi
 
@@ -671,8 +689,10 @@ function archive_clips () {
   elif archive_teslacam_clips
   then
     log "Finished archiving."
+    archive_status_set last_check "$(date +%s)" last_check_result ok || log "failed to record archive status"
   else
     log "Archiving failed."
+    archive_status_set last_check "$(date +%s)" last_check_result error || log "failed to record archive status"
   fi
 
   if timeout 5 [ -d "${MUSIC_ARCHIVE_MOUNT:-}" -a -d "$MUSIC_MOUNT" ]

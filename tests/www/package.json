@@ -1,0 +1,11 @@
+{
+  "name": "teslausb-www-tests",
+  "private": true,
+  "description": "Browser tests for the TeslaUSB web UI",
+  "scripts": {
+    "test": "node --test --test-concurrency=1 ui.test.js"
+  },
+  "devDependencies": {
+    "playwright-core": "1.64.1"
+  }
+}

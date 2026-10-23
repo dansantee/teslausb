@@ -35,3 +35,23 @@ h1 {
   font-size: 1.5em;
   padding: 4px;
 }
+
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  body, html, h1 {
+    background: #0e1014;
+    color: #e9ebf0;
+  }
+
+  a {
+    color: #6b8eff;
+  }
+
+  th {
+    background: #1e2129;
+    border-bottom-color: #2a2e38;
+  }
+}

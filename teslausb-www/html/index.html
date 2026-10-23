@@ -15,7 +15,9 @@
 <script src="filebrowser.js"></script>
 <meta name="msapplication-TileColor" content="#00aba9">
 <meta name="msapplication-config" content="/icons/browserconfig.xml">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#171a20" media="(prefers-color-scheme: dark)">
+<meta name="color-scheme" content="light dark">
 <title>TeslaUSB</title>
 
 <style>
@@ -64,179 +66,7 @@ iframe {
   background: #fff;
 }
 
-.tabheaderholder {
-  display: flex;
-  flex-direction: row;
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 32px;
-  width: 100%;
-  align-items: baseline;
-  padding-top: 3px;
-  white-space: nowrap;
-}
-
-.hamburger {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 36px;
-  height: 32px;
-  border: none;
-  background: url(icons/hamburger.svg);
-  z-index: 15;
-}
-
-.currenttabname {
-  display: none;
-  position: fixed;
-  left: 0;
-  right: 0;
-  height: 32px;
-  line-height: 32px;
-  text-align: center;
-  font-size: 22px;
-}
-
-.settingsbuttondiv {
-  padding-left: 8px;
-  flex: 0 0 22px;
-  height: 22px;
-  top: 6px;
-  right: 2px;
-  position: relative;
-}
-
-.tablabel {
-  display: inline-block;
-  margin: 0 2px 0 2px;
-  padding: 3px 12px;
-  position: relative;
-  top: -3px;
-  color: #444;
-}
-
-/* switch to dropdown tab navigation on narrow screens */
-@media screen and (max-width: 824px) {
-  .hamburger {
-    display: block;
-  }
-
-  .tabheaderholder {
-    // Changing the visibility to hide and show the menu in response
-    // to a click appears to trigger a bug in Chrome that makes it
-    // consume lots of CPU and makes some page interactions very
-    // sluggish until the user performs another interaction like
-    // toggling menu again with the hamburger button or clicking
-    // on the filebrowser splitter.
-    // Hiding and showing the menu by changing its position appears
-    // to avoid the bug.
-    //visibility: hidden;
-    left: 100%;
-    flex-direction: column;
-    height: 100%;
-    width: unset;
-    top: 32px;
-    background: #f8f8f8;
-    z-index: 20;
-    padding-right: 34px;
-    border-right: 1000px solid rgba(0, 0, 0, 0.7);
-    background-clip: padding-box;
-  }
-
-  .tablabel {
-    font-size: 20px;
-    padding: 10px 12px 10px 20px;
-    width: 100%;
-    z-index:10;
-  }
-
-  .tablabel:hover {
-    background: #444;
-    color: #fff;
-  }
-
-  .hamburger.brgropen ~ .tabheaderholder {
-    //visibility: visible;
-    left: 0;
-  }
-  .currenttabname {
-    display: block;
-  }
-
-  .hamburger.brgropen ~ .tabheaderholder > .githublink {
-    position: fixed;
-    bottom: 14px;
-    left: 16px;
-  }
-
-  .settingsbuttondiv {
-    position: fixed;
-    flex: unset;
-    right: 2px;
-    top: 6px;
-    visibility: visible;
-  }
-}
-
-.stretchable {
-  display: inline-block;
-  padding: 4px 12px;
-  position: relative;
-  top: 2px;
-  flex-grow: 1;
-  min-width: 2px;
-}
-
-.githublink {
-  font-size: 70%;
-}
-
-.tab {
-  position: fixed;
-  top: 33px;
-  bottom: 0;
-  left: 0;
-  visibility: hidden;
-  width: 100%;
-  background: #fff;
-}
-
-.tabradiobtn {
-  display: none;
-}
-
-#tab1:checked ~ .tab.content1,
-#tab2:checked ~ .tab.content2,
-#tab3:checked ~ .tab.content3,
-#tab4:checked ~ .tab.content4,
-#tab5:checked ~ .tab.content5,
-#tab6:checked ~ .tab.content6,
-#tab7:checked ~ .tab.content7 {
-  visibility: visible;
-}
-
 @media screen and (min-width: 825px) {
-  .tablabel:hover {
-    border-bottom: 3px solid #AAA;
-    color: #000;
-    z-index:10;
-  }
-
-  #tab1:checked ~ .tabheaderholder .tablabel1,
-  #tab2:checked ~ .tabheaderholder .tablabel2,
-  #tab3:checked ~ .tabheaderholder .tablabel3,
-  #tab4:checked ~ .tabheaderholder .tablabel4,
-  #tab5:checked ~ .tabheaderholder .tablabel5,
-  #tab6:checked ~ .tabheaderholder .tablabel6,
-  #tab7:checked ~ .tabheaderholder .tablabel7 {
-    border-bottom: 3px solid red;
-    color: #000;
-    z-index:11;
-  }
-
   .navbar + div {
     height: calc(100% - 50px);
   }
@@ -252,13 +82,6 @@ iframe {
     width: auto;
     max-width: 100%;
   }
-}
-
-/*hide music tab by default */
-.tablabel5,
-.tablabel6,
-.tablabel7 {
-  display: none;
 }
 
 button {
@@ -805,69 +628,125 @@ video {
 }
 
 </style>
+<link rel="stylesheet" href="app.css">
 </head>
 <body>
 <div class="tabholder">
-  <div class="hamburger" onclick="toggleHamburgerMenu();"></div>
-  <div class="currenttabname" onclick="toggleHamburgerMenu();"></div>
-  <input class="tabradiobtn" type="radio" name="tabs" id="tab1">
-  <input class="tabradiobtn" type="radio" name="tabs" id="tab2">
-  <input class="tabradiobtn" type="radio" name="tabs" id="tab3">
-  <input class="tabradiobtn" type="radio" name="tabs" id="tab4">
-  <input class="tabradiobtn" type="radio" name="tabs" id="tab5">
-  <input class="tabradiobtn" type="radio" name="tabs" id="tab6">
-  <input class="tabradiobtn" type="radio" name="tabs" id="tab7" checked>
-  <div class="tabheaderholder">
-    <label for="tab1" class="tablabel tablabel1">Diagnostics</label>
-    <label for="tab2" class="tablabel tablabel2">Archiveloop log</label>
-    <label for="tab3" class="tablabel tablabel3">Setup log</label>
-    <label for="tab4" class="tablabel tablabel4">Tools</label>
-    <label for="tab5" class="tablabel tablabel5">Recordings</label>
-    <label for="tab6" class="tablabel tablabel6">Files</label>
-    <label for="tab7" class="tablabel tablabel7">Viewer</label>
+  <header class="appbar">
+    <a class="appbar-brand" href="#home">
+      <span class="appbar-logo" data-icon="logo"></span>
+      <span class="appbar-name">TeslaUSB</span>
+    </a>
+    <span class="appbar-title"></span>
+    <span class="appbar-spacer"></span>
+    <span class="livepill" id="livepill">Connecting…</span>
+  </header>
 
-    <div class="stretchable"></div>
+  <nav class="appnav" aria-label="Main">
+    <a class="navitem" href="#home" data-view="home" data-icon="home"><span>Home</span></a>
+    <a class="navitem" href="#clips" data-view="clips" data-icon="clips" hidden><span>Clips</span></a>
+    <a class="navitem" href="#drives" data-view="drives" data-icon="drives" hidden><span>Drives</span></a>
+    <a class="navitem" href="#system" data-view="system" data-icon="system"><span>System</span></a>
+    <div class="appnav-footer"><a href="https://github.com/dansantee/teslausb" target="_blank" rel="noopener">TeslaUSB on GitHub</a></div>
+  </nav>
 
-    <a href="https://www.github.com/marcone/teslausb" target="_blank" class="githublink">TeslaUSB on GitHub</a>
+  <nav class="subnavbar" data-view="clips" aria-label="Clips">
+    <a class="subnavitem" href="#clips/player" data-view="clips" data-sub="player">Player</a>
+    <a class="subnavitem" href="#clips/files" data-view="clips" data-sub="files">All files</a>
+  </nav>
+  <nav class="subnavbar" data-view="system" aria-label="System">
+    <a class="subnavitem" href="#system/status" data-view="system" data-sub="status">Status</a>
+    <a class="subnavitem" href="#system/activity" data-view="system" data-sub="activity">Activity</a>
+    <a class="subnavitem" href="#system/diagnostics" data-view="system" data-sub="diagnostics">Diagnostics</a>
+    <a class="subnavitem" href="#system/setup" data-view="system" data-sub="setup">Setup</a>
+  </nav>
 
-    <div class="settingsbuttondiv" title="Settings">
-      <svg class="settingsbutton" viewBox="0 0 38 38">
-        <path d="M12 6l1-5c1-1 7-1 8 0l1 5a10 10 0 015 4l-16 6zM24.892 7.67l4.83-1.634c1.366.366 4.366 5.562 4 6.928l-3.83 3.366a10 10 0 01-.964 6.33L15.732 11.804zM29.892 19.67l3.83 3.366c.366 1.366-2.634 6.562-4 6.928l-4.83-1.634a10 10 0 01-5.964 2.33l2.804-16.856zM22 30l-1 5c-1 1-7 1-8 0l-1-5a10 10 0 01-5-4l16-6zM9.108 28.33l-4.83 1.634c-1.366-.366-4.366-5.562-4-6.928l3.83-3.366a10 10 0 01.964-6.33l13.196 10.856zM4.108 16.33l-3.83-3.366c-.366-1.366 2.634-6.562 4-6.928l4.83 1.634a10 10 0 015.964-2.33l-2.804 16.856z"/>
-      </svg>
+  <div class="tab content0" data-view="home">
+    <div class="page">
+      <div class="card hero" id="home-hero">
+        <div class="hero-icon"></div>
+        <div class="hero-text">
+          <h1 class="hero-title" id="hero-title">Connecting to TeslaUSB…</h1>
+          <p class="hero-detail" id="hero-detail"></p>
+        </div>
+        <button class="btn primary hero-action" data-action="reconnect" hidden onclick="App.toggleDrives()">Reconnect drives</button>
+        <a class="btn hero-action" data-action="log" hidden href="#system/activity">Open activity log</a>
+      </div>
+
+      <div class="cards">
+        <div class="card" id="card-clips" data-needs="clips" hidden>
+          <div class="card-head"><span class="card-icon" data-icon="clips"></span><span class="card-label">Recordings</span></div>
+          <div class="card-value">…</div>
+          <div class="card-detail"></div>
+        </div>
+        <div class="card" id="card-archive">
+          <div class="card-head"><span class="card-icon" data-icon="archive"></span><span class="card-label">Last archive</span><span class="chip" hidden></span></div>
+          <div class="card-value">…</div>
+          <div class="card-detail"></div>
+        </div>
+        <div class="card" id="card-storage">
+          <div class="card-head"><span class="card-icon" data-icon="storage"></span><span class="card-label">Storage</span><span class="chip" hidden></span></div>
+          <div class="card-value">…</div>
+          <div class="card-detail"></div>
+          <div class="meter"><span></span></div>
+        </div>
+        <div class="card" id="card-wifi">
+          <div class="card-head"><span class="card-icon" data-icon="wifi"></span><span class="card-label">Wi-Fi</span><span class="signalbars" aria-hidden="true"><i></i><i></i><i></i><i></i></span></div>
+          <div class="card-value">…</div>
+          <div class="card-detail"></div>
+        </div>
+        <div class="card" id="card-health">
+          <div class="card-head"><span class="card-icon" data-icon="health"></span><span class="card-label">Pi health</span></div>
+          <div class="card-value">…</div>
+          <div class="card-detail"></div>
+        </div>
+        <div class="card" id="card-ble">
+          <div class="card-head"><span class="card-icon" data-icon="bluetooth"></span><span class="card-label">Keep-awake</span></div>
+          <div class="card-value">…</div>
+          <div class="card-detail"></div>
+        </div>
+      </div>
+
+      <div class="quickactions">
+        <button class="btn primary" data-icon="play" data-needs="clips" id="watchlatest" hidden onclick="App.watchLatest()">Watch latest clip</button>
+        <button class="btn" data-icon="sync" onclick="App.archiveNow()">Archive now</button>
+        <a class="btn" href="#drives" data-icon="drives" data-needs="drives" hidden>Open drives</a>
+      </div>
     </div>
   </div>
 
-  <div class="tab content1">
-    <div style="width:100%;height:calc(100% - 4px)">
+  <div class="tab content1" data-view="system" data-sub="diagnostics">
+    <div class="logview">
       <pre class="mypre" id="diagnosticspre">...</pre>
-      <div style="padding:4px;">
-        <button class="group1" id="diagrefreshbtn" onclick="refreshdiagnostics();">Refresh diagnostics</button>
-        <button class="group1" id="diagdwnbtn" onclick="download('diagnostics.txt', document.getElementById('diagnosticspre').textContent);">Download diagnostics</button>
+      <div class="logtoolbar">
+        <button class="group1" id="diagrefreshbtn" onclick="refreshdiagnostics();">Refresh</button>
+        <button class="group1" id="diagdwnbtn" onclick="download('diagnostics.txt', document.getElementById('diagnosticspre').textContent);">Download</button>
       </div>
     </div>
   </div>
 
-  <div class="tab content2">
-    <div style="width:100%;height:calc(100% - 4px)">
+  <div class="tab content2" data-view="system" data-sub="activity">
+    <div class="logview">
       <pre class="mypre" id="archivelooppre">Loading...</pre>
-      <div style="padding:4px;">
-        <button class="group1" id="aldwnbtn" onclick="download('archiveloop.log', document.getElementById('archivelooppre').textContent);">Download archiveloop log</button>
+      <div class="logtoolbar">
+        <button class="group1" id="aldwnbtn" onclick="download('archiveloop.log', document.getElementById('archivelooppre').textContent);">Download</button>
       </div>
     </div>
   </div>
 
-  <div class="tab content3">
-    <div style="width:100%;height:calc(100% - 4px)">
+  <div class="tab content3" data-view="system" data-sub="setup">
+    <div class="logview">
       <pre class="mypre" id="setuplogpre">Loading...</pre>
-      <div style="padding:4px;">
-        <button class="group1" id="sudwnbtn" onclick="download('teslausb-headless-setup.log', document.getElementById('setuplogpre').textContent);">Download setup log</button>
+      <div class="logtoolbar">
+        <button class="group1" id="sudwnbtn" onclick="download('teslausb-headless-setup.log', document.getElementById('setuplogpre').textContent);">Download</button>
       </div>
     </div>
   </div>
 
-  <div class="tab content4">
-    <div style="width:calc(100% - 4px);margin: 2px;">
-      <div class="pistatus">
+  <div class="tab content4" data-view="system" data-sub="status">
+    <div class="page">
+      <h2 class="section-title">Status</h2>
+      <div class="card statuslist pistatus">
         <div class="status_uptime"></div>
         <div class="status_temp"></div>
         <div class="status_fan"></div>
@@ -901,13 +780,30 @@ video {
         </div>
         <div class="status_throttled"></div>
       </div>
-      <button class="group2" id="toggledrives" onclick="toggledrivesfunc();">...</button>
-      <p>
-      <button class="group2" onclick="syncfunc();">Trigger archive/sync</button>
-      <span id="synctext" style="padding-left:20px;"></span>
-      <p>
-      <button class="group2" onclick="startspeedtest(this);" id="speedtestbutton">Run network speed test</button>
-      <span>
+
+      <h2 class="section-title">Actions</h2>
+      <div class="card actionlist">
+        <div class="action-row">
+          <div class="action-text">
+            <div class="action-title">Car connection</div>
+            <div class="action-desc">Disconnect the drives to work on them here. The car can't record while they're disconnected.</div>
+          </div>
+          <button class="group2" id="toggledrives" onclick="App.toggleDrives();">...</button>
+        </div>
+        <div class="action-row">
+          <div class="action-text">
+            <div class="action-title">Archive now</div>
+            <div class="action-desc">Copy new Saved and Sentry clips to the archive without waiting for the next check.</div>
+            <div class="action-msg" id="synctext"></div>
+          </div>
+          <button class="group2" onclick="syncfunc();">Archive now</button>
+        </div>
+        <div class="action-row">
+          <div class="action-text">
+            <div class="action-title">Network speed</div>
+            <div class="action-desc">Measure how fast this phone or computer can download from the Pi.</div>
+            <div class="action-msg"><span id="speedtext"></span></div>
+          </div>
         <svg id="speedspinner" width="20" height="20" style="margin-left: 10px; vertical-align:middle;visibility:hidden;" viewBox="-12 -12 24 24">
           <g stroke-linecap="round" stroke-width="2">
             <path id="a" d="M0 5 0 10"/>
@@ -923,40 +819,57 @@ video {
             <use transform="rotate(324)" xlink:href="#a" stroke="#000000"/>
           </g>
         </svg>
-        <span id="speedtext" style="padding-left:10px;"></span>
-      </span>
-      <p>
-        <div id="pairingdiv">
-          <button class="group2" id="pairKey" onclick="pairBLEkey();">Pair BLE with Car</button>
-          <span id="pairtext" style="padding-left:20px;"></span>
+          <button class="group2" onclick="startspeedtest(this);" id="speedtestbutton">Run test</button>
         </div>
-      <p>
-      <button class="group2" id="rebootbutton" onclick="rebootfunc(this);">Restart Raspberry Pi</button><span id="reboottext" style="padding-left:20px;"></span>
+        <div class="action-row" id="pairingdiv">
+          <div class="action-text">
+            <div class="action-title">Bluetooth keep-awake</div>
+            <div class="action-desc">Pair the Pi with the car so it can keep the car awake while clips are copied. Tap your key card on the center console when the car asks.</div>
+            <div class="action-msg" id="pairtext"></div>
+          </div>
+          <button class="group2" id="pairKey" onclick="pairBLEkey();">Pair with car</button>
+        </div>
+        <div class="action-row">
+          <div class="action-text">
+            <div class="action-title">Restart the Pi</div>
+            <div class="action-desc">Takes about a minute. The car can't record while it restarts.</div>
+            <div class="action-msg" id="reboottext"></div>
+          </div>
+          <button class="group2 danger" id="rebootbutton" onclick="App.restart(this);">Restart</button>
+        </div>
+        <div class="action-row">
+          <div class="action-text">
+            <div class="action-title">Alternative interface</div>
+            <div class="action-desc">Switch to the separate TeslaUSB web app that's also installed on the Pi.</div>
+          </div>
+          <button class="group2" onclick="showsettings();">Options</button>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="tab content5">
+  <div class="tab content5" data-view="clips" data-sub="files">
     <div style="width:100%;height:calc(100% - 4px);">
       <iframe class="recordings" src="TeslaCam/" onload="hideRecordingParent();"></iframe>
     </div>
   </div>
 
-  <div class="tab content6">
+  <div class="tab content6" data-view="drives">
     <div id="filebrowser" style="width:100%;height:calc(100% - 4px);">
     </div>
   </div>
 
-  <div class="tab content7">
+  <div class="tab content7" data-view="clips" data-sub="player">
     <div class="videoholderparent" style="width:100%;height:100%;background:#333;" onmousemove="showcontrols()">
       <div class="navbar">
         <div class="noclips">Loading...</div>
-        <div class="subnav">RecentClips
+        <div class="subnav">Recent
           <div id="RecentClips" class="subnav-content"></div>
         </div>
-        <div class="subnav">SavedClips
+        <div class="subnav">Saved
           <div id="SavedClips" class="subnav-content"></div>
         </div>
-        <div class="subnav">SentryClips
+        <div class="subnav">Sentry
           <div id="SentryClips" class="subnav-content"></div>
         </div>
 
@@ -1044,8 +957,23 @@ video {
       </div>
     </div>
   </div>
+
+  <dialog class="appdialog" id="appdialog">
+    <form method="dialog">
+      <div class="appdialog-body">
+        <h2 id="appdialog-title"></h2>
+        <p id="appdialog-text"></p>
+      </div>
+      <div class="appdialog-actions">
+        <button class="btn" value="cancel">Cancel</button>
+        <button class="btn primary" value="ok" id="appdialog-ok">OK</button>
+      </div>
+    </form>
+  </dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 </div>
 
+<script src="app.js"></script>
 <script>
 
 function localStorageGet(name) {
@@ -1369,7 +1297,7 @@ function callcgi(url) {
 function syncfunc() {
   callcgi('cgi-bin/trigger_sync.sh');
   var msg=document.getElementById('synctext');
-  msg.textContent="Sync triggered";
+  msg.textContent="Archive started";
   setTimeout(function() { msg.textContent=""; }, 5000);
 }
 
@@ -1452,7 +1380,7 @@ function startspeedtest(button) {
   var spinner = document.getElementById('speedspinner');
   if (randomReader == undefined) {
     log("starting speed test");
-    button.textContent="Stop network speed test";
+    button.textContent="Stop test";
     spinner.style.visibility = "inherit";
     (async () => {
       const randomStream = await fetch('cgi-bin/randomdata.sh')
@@ -1485,7 +1413,7 @@ function stopspeedtest(button, indicator, spinner) {
       log(error);
     }
     randomReader = undefined;
-    button.textContent="Run network speed test";
+    button.textContent="Run test";
     indicator.textContent = "";
     spinner.style.visibility = "hidden";
   }
@@ -1533,7 +1461,7 @@ function pairBLEkey() {
           msg.textContent = "Pairing failed. Please try again.";
         }
         button.disabled = false;
-        button.textContent = "Pair BLE with Car";
+        button.textContent = "Pair with car";
         setbuttonsdisabled('group1', false);
         setbuttonsdisabled('group2', false);
      }
@@ -1573,7 +1501,7 @@ function waitforpairing(button, count) {
       }
 
       button.disabled = false;
-      button.textContent = "Pair BLE with Car";
+      button.textContent = "Pair with car";
       setbuttonsdisabled('group1', false);
       setbuttonsdisabled('group2', false);
     }
@@ -1583,8 +1511,8 @@ function waitforpairing(button, count) {
 
 function restorerebootbutton(button) {
   button.disabled=false;
-  button.textContent='Restart Raspberry Pi';
-  button.onclick=function() { rebootfunc(button); };
+  button.textContent='Restart';
+  button.onclick=function() { App.restart(button); };
 }
 
 function waitforreboot(button) {
@@ -1616,15 +1544,9 @@ function realrebootfunc(button) {
   setbuttonsdisabled('group2', true);
   callcgi('cgi-bin/reboot.sh');
   var msg=document.getElementById('reboottext');
-  msg.textContent="Reboot is in progress";
+  msg.textContent="Restarting… this page reconnects when the Pi is back.";
   button.disabled=true;
   setTimeout(function() { waitforreboot(button); }, 5000);
-}
-
-function rebootfunc (button) {
-  button.textContent="Press again to confirm reboot";
-  button.onclick=function() { realrebootfunc(button); }
-  rebootbuttonresetter=setTimeout(function() { restorerebootbutton(button); }, 10000);
 }
 
 async function refreshdiagnostics() {
@@ -1712,10 +1634,11 @@ function updateuptimeonly() {
 
 function showstatus() {
   var uptimediv = document.querySelector(".status_uptime");
-  if (isElementVisible(uptimediv) || uptimediv.clientHeight == 0) {
+  if (isElementVisible(uptimediv) || uptimediv.clientHeight == 0 || App.wantsStatus()) {
     readfile({url:'cgi-bin/status.sh', callback:function(value) {
       statusvals=JSON.parse(value);
       statusvals.retrieved = Date.now();
+      App.onStatus(statusvals);
       uptimediv.innerText = "Uptime: " + uptimeString(statusvals.uptime);
 
       var tempdiv = document.querySelector(".status_temp");
@@ -1787,11 +1710,11 @@ function showstatus() {
       var togglebutton = document.getElementById("toggledrives");
       if (statusvals.drives_active != togglebutton.drives_active) {
         if (statusvals.drives_active == "yes") {
-          drivesdiv.innerText = "Drives: visible to host";
-          togglebutton.innerText = "Disconnect drives from host";
+          drivesdiv.innerText = "Car connection: drives connected";
+          togglebutton.innerText = "Disconnect";
         } else {
-          drivesdiv.innerText = "Drives: not visible to host";
-          togglebutton.innerText = "Connect drives to host";
+          drivesdiv.innerText = "Car connection: drives disconnected";
+          togglebutton.innerText = "Connect";
         }
         togglebutton.drives_active = statusvals.drives_active;
       }
@@ -1860,46 +1783,26 @@ var config;
 function readconfig() {
   readfile({url:'cgi-bin/config.sh', callback:function(value) {
     config = JSON.parse(value);
-    const filestab = document.querySelector(".tablabel6");
     var numdrives = 0;
     if (config.has_music == "yes") numdrives++;
     if (config.has_lightshow == "yes") numdrives++;
     if (config.has_boombox == "yes") numdrives++;
-    if (numdrives == 1) {
-      var filestabname = "Music"
-      if (config.has_lightshow == "yes") filestabname = "LightShow";
-      if (config.has_boombox == "yes") filestabname = "Boombox";
-      filestab.innerText = filestabname;
-    }
-    if (numdrives > 0 && filestab.style.display == "") {
-      filestab.style.display = "inline-block";
-
-      const fb = document.querySelector("#filebrowser");
+    const fb = document.querySelector("#filebrowser");
+    if (numdrives > 0 && !fb.dataset.ready) {
+      fb.dataset.ready = "yes";
+      // the Boombox drive holds lock chimes, Boombox sounds and light shows,
+      // so it's labeled for what it holds rather than for the setting that made it
       new FileBrowser(fb, [
         ...config.has_music == "yes" ? [{ path: "fs/Music", label: "Music" }] : [],
-        ...config.has_lightshow == "yes" ? [{ path: "fs/LightShow", label: "LightShow" }] : [],
-        ...config.has_boombox == "yes" ? [{ path: "fs/Boombox", label: "Boombox" }] : []
+        ...config.has_lightshow == "yes" ? [{ path: "fs/LightShow", label: "Light shows" }] : [],
+        ...config.has_boombox == "yes" ? [{ path: "fs/Boombox", label: "Extras" }] : []
       ]);
     }
-    if (config.has_cam == "yes") {
-      const recordingstab = document.querySelector(".tablabel5");
-      const viewertab = document.querySelector(".tablabel7");
-      recordingstab.style.display = "inline-block";
-      viewertab.style.display = "inline-block";
-    } else if (numdrives > 0) {
-      const filesbtn = document.querySelector("#tab6");
-      filesbtn.checked = true;
-    } else {
-      const toolsbtn = document.querySelector("#tab4");
-      toolsbtn.checked = true;
-    }
+    App.setAvailable("drives", numdrives > 0);
+    App.setAvailable("clips", config.has_cam == "yes");
     const blebtn = document.getElementById("pairingdiv");
-    if (config.uses_ble == "yes") {
-      blebtn.style.display = "block";
-    }
-    else {
-      blebtn.style.display = "none";
-    }
+    blebtn.style.display = config.uses_ble == "yes" ? "" : "none";
+    App.onConfig(config);
   }});
 }
 
@@ -1911,8 +1814,6 @@ function initialize() {
   showstatus();
   refreshdiagnostics();
 
-  var settingsbtn = document.querySelector('.settingsbutton');
-  settingsbtn.onclick = showsettings;
   var closebutton = document.querySelector('.closebutton');
   closebutton.onclick = closesettings;
   window.onclick = function(event) {
@@ -2968,6 +2869,7 @@ readfile({url:'cgi-bin/videolist.sh', callback:function(value) {
     newestsequence.select();
   }
   nr.innerHTML = "No recordings";
+  App.onClips(videos, newestsequence);
   initialize();
 }
 });
@@ -3019,32 +2921,6 @@ function slidermousemove(e) {
   // TODO maybe: interpolate to show the exact time of the cursor
   bub.innerText = secondstostring(secondsinday);
 }
-
-function toggleHamburgerMenu() {
-  const brgr = document.querySelector(".hamburger");
-  brgr.classList.toggle("brgropen");
-  const menu = document.querySelector(".tabheaderholder");
-  menu.onclick = (e) => {
-    if (e.target.classList.contains("tablabel")) {
-      const tabname = document.querySelector(".currenttabname");
-      tabname.innerText = e.target.innerText;
-    }
-    brgr.classList.remove("brgropen");
-    menu.onclick = null;
-  }
-}
-
-function setCurrentTabName() {
-  const checkedradio = document.querySelector(".tabradiobtn:checked");
-  const checkedlabel = document.querySelector(`label[for=${checkedradio.id}]`).textContent;
-  const tabname = document.querySelector(".currenttabname");
-  tabname.innerText = checkedlabel;
-}
-
-setCurrentTabName();
-
-const mediaQuery = window.matchMedia('screen and (max-width: 824px)');
-mediaQuery.addListener(setCurrentTabName);
 
 
 </script>

@@ -366,6 +366,7 @@ function install_archive_scripts () {
   log_progress "Installing base archive scripts into $install_path"
   copy_script setup/pi/envsetup.sh "$install_path"
   copy_script run/archiveloop "$install_path"
+  copy_script run/archive-status.sh "$install_path"
   copy_script run/waitforidle "$install_path"
   copy_script run/remountfs_rw "$install_path"
   copy_script run/awake_start "$install_path"

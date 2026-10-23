@@ -1,0 +1,5 @@
+d:Boombox
+d:LightShow
+f:LockChime.wav:237266
+f:LockChime_Zelda.wav:349844
+s:104000000:104857600
