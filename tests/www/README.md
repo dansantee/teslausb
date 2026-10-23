@@ -9,6 +9,9 @@ answers the CGI calls with the canned data in `fixtures/`. Nothing talks to a re
   in-memory Extras drive, seeded from `fixtures/extras-drive.json`, and the file scripts
   (`ls`, `upload`, `mkdir`, `mv`, `cp`, `rm`) act on it, so tests can check what ended up on
   the drive.
+- `clips.test.js`: the clip library and player. The clip list comes from
+  `fixtures/videolist.txt`, and the cars' event files from `fixtures/teslacam.json`. Videos
+  aren't served (404s), so playback itself isn't tested here.
 
 Needs Node 18 or newer and a Chromium build:
 
