@@ -1,0 +1,17 @@
+{
+  "comment": "Small files served under /TeslaCam/ for the clip tests. Videos aren't served (404), which the player handles.",
+  "files": {
+    "SavedClips/2026-10-20_14-05-31/event.json": {
+      "timestamp": "2026-10-20T14:05:10", "city": "Overland Park", "street": "W 124th St",
+      "est_lat": "38.904", "est_lon": "-94.6868", "reason": "user_interaction_honk", "camera": "0"
+    },
+    "SentryClips/2026-10-21_09-12-03/event.json": {
+      "timestamp": "2026-10-21T09:11:40", "city": "Kansas City", "street": "E 63rd St",
+      "est_lat": "39.0133", "est_lon": "-94.5809", "reason": "sentry_aware_object_detection", "camera": "6"
+    },
+    "SentryClips/2026-10-22_18-40-44/event.json": {
+      "timestamp": "2026-10-22T18:40:20", "city": "Lenexa", "street": "Renner Blvd",
+      "reason": "sentry_aware_accel_0.42", "camera": "0"
+    }
+  }
+}

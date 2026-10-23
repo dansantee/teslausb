@@ -63,7 +63,11 @@ function lsOutput(drive, dir) {
   return lines.join('\n') + '\n';
 }
 
-function startServer({ status = {}, config = 'config-full.json', drive: driveOverrides = {}, failUpload = null } = {}) {
+// a 1x1 PNG, for clip thumbnails
+const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGNgYGD4DwABBAEAwS2OUAAAAABJRU5ErkJggg==', 'base64');
+
+function startServer({ status = {}, config = 'config-full.json', drive: driveOverrides = {}, failUpload = null, videolist = null } = {}) {
+  const teslacam = JSON.parse(fixture('teslacam.json')).files;
   const requests = [];
   const calls = [];
   const drive = makeDrive(driveOverrides);
@@ -152,7 +156,7 @@ function startServer({ status = {}, config = 'config-full.json', drive: driveOve
         case 'config.sh':
           return send(200, 'application/json', fixture(config));
         case 'videolist.sh':
-          return send(200, 'text/plain', fixture('videolist.txt'));
+          return send(200, 'text/plain', videolist !== null ? videolist : fixture('videolist.txt'));
         case 'ls.sh': {
           const a = args(url);
           if (!a) return send(200, 'text/plain', '');
@@ -194,7 +198,13 @@ function startServer({ status = {}, config = 'config-full.json', drive: driveOve
       const rel = p.slice(DRIVE_ROOT.length + 2);
       return drive.has(rel) ? send(200, 'application/octet-stream', drive.get(rel)) : send(404, 'text/plain', 'not found');
     }
-    if (p.startsWith('/TeslaCam/') || p.startsWith('/fs/')) {
+    if (p.startsWith('/TeslaCam/')) {
+      const rel = p.slice('/TeslaCam/'.length);
+      if (teslacam[rel]) return send(200, 'application/json', JSON.stringify(teslacam[rel]));
+      if (rel.endsWith('/thumb.png')) return send(200, 'image/png', PNG);
+      return send(404, 'text/plain', 'not found');
+    }
+    if (p.startsWith('/fs/')) {
       return send(404, 'text/plain', 'not found');
     }
     const file = path.join(HTML, p === '/' ? 'index.html' : p);

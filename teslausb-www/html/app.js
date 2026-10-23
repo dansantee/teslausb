@@ -174,6 +174,7 @@
     setText('.appbar-title', VIEWS[view].title);
     document.title = VIEWS[view].title === 'Home' ? 'TeslaUSB' : VIEWS[view].title + ' · TeslaUSB';
     if (view === 'files' && sub !== 'all' && window.Files) window.Files.show(sub);
+    if (view === 'clips' && sub === 'player' && window.Clips) window.Clips.show();
   }
 
   function go(view, sub) {
@@ -258,6 +259,7 @@
     };
     const watch = $('#watchlatest');
     if (watch) watch.classList.toggle('noclips', !newest);
+    if (window.Clips) window.Clips.onClips(videos, newest);
     renderHome();
   }
 
@@ -444,17 +446,10 @@
     });
   }
 
-  // selects the newest clip in the player the same way picking it from its menu does
+  // opens the newest clip in the player
   function watchLatest() {
-    if (latest) {
-      const item = $$('.subnav-content .dropdownitem').find(el => el.sequence === latest);
-      if (item) {
-        item.click();
-      } else if (typeof latest.select === 'function') {
-        latest.select();
-      }
-    }
-    go('clips', 'player');
+    if (latest && window.Clips) window.Clips.open(latest);
+    else go('clips', 'player');
   }
 
   function archiveNow() {
