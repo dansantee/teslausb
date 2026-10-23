@@ -645,7 +645,7 @@ video {
   <nav class="appnav" aria-label="Main">
     <a class="navitem" href="#home" data-view="home" data-icon="home"><span>Home</span></a>
     <a class="navitem" href="#clips" data-view="clips" data-icon="clips" hidden><span>Clips</span></a>
-    <a class="navitem" href="#drives" data-view="drives" data-icon="drives" hidden><span>Drives</span></a>
+    <a class="navitem" href="#files" data-view="files" data-icon="files" hidden><span>Files</span></a>
     <a class="navitem" href="#system" data-view="system" data-icon="system"><span>System</span></a>
     <div class="appnav-footer"><a href="https://github.com/dansantee/teslausb" target="_blank" rel="noopener">TeslaUSB on GitHub</a></div>
   </nav>
@@ -653,6 +653,12 @@ video {
   <nav class="subnavbar" data-view="clips" aria-label="Clips">
     <a class="subnavitem" href="#clips/player" data-view="clips" data-sub="player">Player</a>
     <a class="subnavitem" href="#clips/files" data-view="clips" data-sub="files">All files</a>
+  </nav>
+  <nav class="subnavbar" data-view="files" aria-label="Files">
+    <a class="subnavitem" href="#files/lock" data-view="files" data-sub="lock">Lock sound</a>
+    <a class="subnavitem" href="#files/boombox" data-view="files" data-sub="boombox">Boombox</a>
+    <a class="subnavitem" href="#files/shows" data-view="files" data-sub="shows">Light shows</a>
+    <a class="subnavitem" href="#files/all" data-view="files" data-sub="all">All files</a>
   </nav>
   <nav class="subnavbar" data-view="system" aria-label="System">
     <a class="subnavitem" href="#system/status" data-view="system" data-sub="status">Status</a>
@@ -710,7 +716,7 @@ video {
       <div class="quickactions">
         <button class="btn primary" data-icon="play" data-needs="clips" id="watchlatest" hidden onclick="App.watchLatest()">Watch latest clip</button>
         <button class="btn" data-icon="sync" onclick="App.archiveNow()">Archive now</button>
-        <a class="btn" href="#drives" data-icon="drives" data-needs="drives" hidden>Open drives</a>
+        <a class="btn" href="#files" data-icon="files" data-needs="files" hidden>Sounds &amp; light shows</a>
       </div>
     </div>
   </div>
@@ -854,7 +860,11 @@ video {
     </div>
   </div>
 
-  <div class="tab content6" data-view="drives">
+  <div class="tab content8" data-view="files" data-sub="lock"><div class="page" id="files-lock"></div></div>
+  <div class="tab content8" data-view="files" data-sub="boombox"><div class="page" id="files-boombox"></div></div>
+  <div class="tab content8" data-view="files" data-sub="shows"><div class="page" id="files-shows"></div></div>
+
+  <div class="tab content6" data-view="files" data-sub="all">
     <div id="filebrowser" style="width:100%;height:calc(100% - 4px);">
     </div>
   </div>
@@ -974,6 +984,7 @@ video {
 </div>
 
 <script src="app.js"></script>
+<script src="files.js"></script>
 <script>
 
 function localStorageGet(name) {
@@ -1798,7 +1809,7 @@ function readconfig() {
         ...config.has_boombox == "yes" ? [{ path: "fs/Boombox", label: "Extras" }] : []
       ]);
     }
-    App.setAvailable("drives", numdrives > 0);
+    App.setAvailable("files", numdrives > 0);
     App.setAvailable("clips", config.has_cam == "yes");
     const blebtn = document.getElementById("pairingdiv");
     blebtn.style.display = config.uses_ble == "yes" ? "" : "none";

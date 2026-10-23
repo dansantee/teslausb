@@ -1,0 +1,16 @@
+{
+  "comment": "Initial contents of the Extras (Boombox) drive for the Files tests: path -> size in bytes, or a string for small text files. Directories end in /.",
+  "files": {
+    "LockChime.wav": 237266,
+    "LockChime_Zelda.wav": 349844,
+    "michael-myers.wav": 237266,
+    "notes.txt": 12,
+    ".metadata_never_index": 0,
+    "Boombox/": 0,
+    "Boombox/airhorn.mp3": 54134,
+    "LightShow/": 0,
+    "LightShow/Holiday.fseq": 802000,
+    "LightShow/Holiday.wav": 5300000,
+    "LightShow/Halfdone.fseq": 1200
+  }
+}

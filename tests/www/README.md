@@ -4,6 +4,12 @@ Browser tests for the web UI in `teslausb-www/html`. They load the real page in 
 Chromium against `fixture-server.js`, which serves the HTML, CSS and JS from the repo and
 answers the CGI calls with the canned data in `fixtures/`. Nothing talks to a real Pi.
 
+- `ui.test.js`: navigation, the Home dashboard, confirmations.
+- `files.test.js`: Files (lock sounds, Boombox, light shows). The fixture server keeps an
+  in-memory Extras drive, seeded from `fixtures/extras-drive.json`, and the file scripts
+  (`ls`, `upload`, `mkdir`, `mv`, `cp`, `rm`) act on it, so tests can check what ended up on
+  the drive.
+
 Needs Node 18 or newer and a Chromium build:
 
 ```

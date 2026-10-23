@@ -4,63 +4,15 @@
 
 const { test, before, after } = require('node:test');
 const assert = require('node:assert/strict');
-const fs = require('fs');
-const path = require('path');
 const { chromium } = require('playwright-core');
 const { startServer } = require('./fixture-server');
-
-function findChromium() {
-  if (process.env.CHROMIUM_PATH) return process.env.CHROMIUM_PATH;
-  const roots = [
-    process.env.PLAYWRIGHT_BROWSERS_PATH,
-    process.env.LOCALAPPDATA && path.join(process.env.LOCALAPPDATA, 'ms-playwright'),
-    process.env.HOME && path.join(process.env.HOME, '.cache', 'ms-playwright'),
-  ].filter(Boolean);
-  for (const root of roots) {
-    if (!fs.existsSync(root)) continue;
-    for (const dir of fs.readdirSync(root).filter(d => /^chromium-\d+$/.test(d)).sort().reverse()) {
-      for (const exe of ['chrome-win64/chrome.exe', 'chrome-linux/chrome', 'chrome-linux64/chrome',
-                         'chrome-mac/Chromium.app/Contents/MacOS/Chromium']) {
-        const candidate = path.join(root, dir, exe);
-        if (fs.existsSync(candidate)) return candidate;
-      }
-    }
-  }
-  throw new Error('No Chromium found. Set CHROMIUM_PATH or install one with `npx playwright install chromium`.');
-}
+const { findChromium, open: openWith, visibleTab, text, clickTo } = require('./helpers');
 
 let browser;
 before(async () => { browser = await chromium.launch({ executablePath: findChromium() }); });
 after(async () => { if (browser) await browser.close(); });
 
-// opens the UI against a fixture server and collects page errors
-async function open(t, { status, config, hash = '', viewport = { width: 1280, height: 800 } } = {}) {
-  const server = await startServer({ status, config });
-  const page = await browser.newPage({ viewport });
-  const errors = [];
-  page.on('pageerror', e => errors.push(e.message));
-  t.after(async () => { await page.close(); await server.close(); });
-  await page.goto(server.url + hash);
-  await page.waitForFunction(() => document.querySelector('#hero-title').textContent !== 'Connecting to TeslaUSB…');
-  return { page, server, errors };
-}
-
-const visibleTab = page => page.evaluate(() =>
-  Array.from(document.querySelectorAll('.tab'))
-    .filter(t => getComputedStyle(t).visibility === 'visible')
-    .map(t => t.dataset.view + (t.dataset.sub ? '/' + t.dataset.sub : '')));
-
-const text = (page, sel) => page.locator(sel).first().innerText();
-
-// clicks a link and waits until the router has shown `expected` ("view" or "view/sub")
-async function clickTo(page, selector, expected) {
-  await page.locator(selector).click();
-  await page.waitForFunction(want => {
-    const shown = Array.from(document.querySelectorAll('.tab.active'))
-      .map(t => t.dataset.view + (t.dataset.sub ? '/' + t.dataset.sub : ''));
-    return shown.length === 1 && shown[0] === want;
-  }, expected, { timeout: 3000 }).catch(() => {});
-}
+const open = (t, opts) => openWith(browser, t, opts);
 
 test('opens on Home with a Ready banner and filled-in cards', async t => {
   const { page, errors } = await open(t);
@@ -169,7 +121,7 @@ test('opens straight into a deep link', async t => {
 
 test('hides Clips when there is no dashcam drive', async t => {
   const { page } = await open(t, { config: 'config-nocam.json', hash: '#clips' });
-  await page.waitForFunction(() => document.querySelector('.navitem[data-view="drives"]').hidden === false);
+  await page.waitForFunction(() => document.querySelector('.navitem[data-view="files"]').hidden === false);
   assert.equal(await page.locator('.navitem[data-view="clips"]').isVisible(), false);
   assert.equal(await page.locator('#card-clips').isVisible(), false);
   assert.deepEqual(await visibleTab(page), ['home']);
@@ -177,8 +129,10 @@ test('hides Clips when there is no dashcam drive', async t => {
   assert.equal(await page.locator('#pairingdiv').isVisible(), false);
 });
 
-test('labels the Boombox drive as Extras', async t => {
+test('labels the Boombox drive as Extras, and old #drives links still open the file browser', async t => {
   const { page } = await open(t, { hash: '#drives' });
+  await page.waitForFunction(() => document.querySelector('.content6').classList.contains('active'));
+  assert.deepEqual(await visibleTab(page), ['files/all']);
   await page.waitForSelector('.fb-treerootpath');
   assert.match(await text(page, '.fb-treerootpath'), /Extras/);
 });

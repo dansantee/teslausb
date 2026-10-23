@@ -16,7 +16,7 @@
     logo: '<path d="M12 2v13"/><path d="m8.5 5.5 3.5-3.5 3.5 3.5"/><path d="M7 10v2a2 2 0 0 0 2 2h3"/><path d="M17 8v4a2 2 0 0 1-2 2h-3"/><circle cx="12" cy="19" r="2.5"/>',
     home: '<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
     clips: '<rect x="2.5" y="6" width="13.5" height="12" rx="2.5"/><path d="m16 10.5 5.5-3.5v10L16 13.5z"/>',
-    drives: '<rect x="3" y="13" width="18" height="7" rx="2"/><path d="M5 13 7.5 5h9L19 13"/><path d="M7 16.5h.01M10 16.5h.01"/>',
+    files: '<path d="M3 7.5A2.5 2.5 0 0 1 5.5 5H9l2 2.5h7.5A2.5 2.5 0 0 1 21 10v7.5a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5z"/><path d="M14 11v5.2"/><circle cx="12.4" cy="16.2" r="1.6"/><path d="M14 11l2.5.8"/>',
     system: '<path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>',
     archive: '<path d="M7 18.5a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 18 9.5a4 4 0 0 1 .5 7.97"/><path d="M12 12.5v8M9 15.5l3-3 3 3"/>',
     storage: '<ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.66 3.58 3 8 3s8-1.34 8-3V6"/><path d="M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/>',
@@ -135,16 +135,18 @@
   const VIEWS = {
     home: { title: 'Home', subs: null },
     clips: { title: 'Clips', subs: ['player', 'files'] },
-    drives: { title: 'Drives', subs: null },
+    files: { title: 'Files', subs: ['lock', 'boombox', 'shows', 'all'] },
     system: { title: 'System', subs: ['status', 'activity', 'diagnostics', 'setup'] },
   };
 
   const lastSub = {};
   let current = { view: null, sub: null };
-  const available = { home: true, clips: false, drives: false, system: true };
+  const available = { home: true, clips: false, files: false, system: true };
 
   function parseHash() {
     const [view, sub] = location.hash.replace(/^#\/?/, '').split('/');
+    // "Drives" was renamed "Files"; old links open the plain file browser
+    if (view === 'drives') return { view: 'files', sub: 'all' };
     return { view: view || 'home', sub: sub || null };
   }
 
@@ -171,6 +173,7 @@
     });
     setText('.appbar-title', VIEWS[view].title);
     document.title = VIEWS[view].title === 'Home' ? 'TeslaUSB' : VIEWS[view].title + ' · TeslaUSB';
+    if (view === 'files' && sub !== 'all' && window.Files) window.Files.show(sub);
   }
 
   function go(view, sub) {
@@ -238,6 +241,8 @@
 
   function onConfig(c) {
     config = c;
+    if (window.Files) window.Files.onConfig(c);
+    if (current.view === 'files' && current.sub !== 'all' && window.Files) window.Files.show(current.sub);
     renderHome();
   }
 
