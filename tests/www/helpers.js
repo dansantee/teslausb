@@ -26,9 +26,9 @@ function findChromium() {
 }
 
 // opens the UI against a fixture server, waits for the first status, and collects page errors
-async function open(browser, t, { status, config, drive, failUpload, videolist, hash = '', viewport = { width: 1280, height: 800 } } = {}) {
+async function open(browser, t, { status, config, drive, failUpload, videolist, hash = '', viewport = { width: 1280, height: 800 }, hasTouch = false } = {}) {
   const server = await startServer({ status, config, drive, failUpload, videolist });
-  const page = await browser.newPage({ viewport });
+  const page = await browser.newPage({ viewport, hasTouch });
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
   t.after(async () => { await page.close(); await server.close(); });

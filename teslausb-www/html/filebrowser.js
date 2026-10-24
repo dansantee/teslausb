@@ -722,6 +722,11 @@ class FileBrowser {
     div.draggable = true;
     if (isdir) {
       div.ondblclick = (e) => { this.dirClicked(null, path); };
+      // phones can't double-tap reliably, so a tap opens a folder there; a mouse click still selects it
+      div.addEventListener("pointerup", (e) => {
+        // not while the name is being edited: a tap there positions the cursor
+        if (e.pointerType == "touch" && !div.isContentEditable) this.dirClicked(null, path);
+      });
       this.addCommonDragHooks(div);
       div.dataset.fullpath = this.stringEncode(path);
     } else {
@@ -729,6 +734,7 @@ class FileBrowser {
       div.ondblclick = (e) => { this.fileClicked(null, justThePath); };
       div.dataset.fullpath = this.stringEncode(justThePath);
       div.dataset.filesize = path.substring(path.lastIndexOf(":") + 1);
+      div.dataset.size = this.niceNumber(Number(div.dataset.filesize));
     }
     div.onclick = (e) => { this.selectFileEntry(e); };
     div.onpointerdown = (e) => { e.stopPropagation(); };
@@ -818,7 +824,7 @@ class FileBrowser {
       this.addCommonDragHooks(a);
       a.dataset.fullpath = this.stringEncode(".");
     }
-    a.innerText = '[' + this.root_label + ']';
+    a.innerText = this.root_label;
     container.appendChild(a);
 
     for (var i = 0; i < pathParts.length; i++) {
@@ -835,7 +841,10 @@ class FileBrowser {
         a.dataset.fullpath = this.stringEncode(pathSoFar);
       }
       a.innerText = pathParts[i];
-      container.append("/");
+      var sep = document.createElement("span");
+      sep.className = "fb-crumbsep";
+      sep.textContent = "›";
+      container.appendChild(sep);
       container.appendChild(a);
     }
   }
@@ -973,7 +982,7 @@ class FileBrowser {
 
   niceNumber(totalsize) {
     var str = "";
-    if (totalsize < 100000) {
+    if (totalsize < 1024) {
       str += `${totalsize} bytes`
     } else if (totalsize < 2000000) {
       str += `${(totalsize / 1024).toFixed(0)} KB`

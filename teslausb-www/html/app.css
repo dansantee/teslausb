@@ -1560,54 +1560,518 @@ body.has-subnav {
   }
 }
 
-/* ---------- file browser (Files > All files) ---------- */
+/* ---------- file browser (Files > All files) ----------
+ * filebrowser.js builds this; these rules only restyle it to match the rest of the app.
+ * Icons are SVG masks chosen by file extension (data-fullpath), filled with currentColor.
+ */
 
-/* its new-folder/upload buttons float at the bottom of the screen; keep them above the phone tab bar */
-.fb-buttonbar {
-  bottom: calc(24px + var(--bottomnav-h));
+:root {
+  --ico-folder: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linejoin='round'%3E%3Cpath d='M3 7.5A2.5 2.5 0 0 1 5.5 5H9l2 2.5h7.5A2.5 2.5 0 0 1 21 10v7.5a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5z'/%3E%3C/svg%3E");
+  --ico-file: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linejoin='round'%3E%3Cpath d='M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z'/%3E%3Cpath d='M14 3v5h5'/%3E%3C/svg%3E");
+  --ico-audio: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 18V5l11-2v13'/%3E%3Ccircle cx='6' cy='18' r='3'/%3E%3Ccircle cx='17' cy='16' r='3'/%3E%3C/svg%3E");
+  --ico-video: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linejoin='round'%3E%3Crect x='2.5' y='6' width='13.5' height='12' rx='2.5'/%3E%3Cpath d='m16 10.5 5.5-3.5v10L16 13.5z'/%3E%3C/svg%3E");
+  --ico-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='2.5'/%3E%3Ccircle cx='9' cy='9' r='2'/%3E%3Cpath d='m21 15-5-5L5 21'/%3E%3C/svg%3E");
+  --ico-lights: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8'/%3E%3C/svg%3E");
+  --ico-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9 6 6 6-6 6'/%3E%3C/svg%3E");
 }
 
-/* ---------- file browser (Drives) in dark mode ---------- */
+#filebrowser {
+  background: var(--surface);
+  color: var(--text);
+}
+
+#filebrowser .fb-treediv,
+#filebrowser .fb-filesdiv {
+  background: var(--surface);
+}
+
+#filebrowser .fb-treediv {
+  width: 260px;
+  min-width: 180px;
+  border-right: 1px solid var(--border);
+}
+
+#filebrowser .fb-filesdiv {
+  margin-left: 0;
+}
+
+#filebrowser .fb-treerootpath,
+#filebrowser .fb-dirpath {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 48px;
+  max-height: none;
+  margin: 0;
+  padding: 0 14px;
+  box-sizing: border-box;
+  border-bottom: 1px solid var(--border);
+  font-size: 15px;
+  font-weight: 650;
+  color: var(--text);
+}
+
+#filebrowser .fb-treerootpath:has(.fb-treerootpathsinglelabel) {
+  min-height: 48px;
+  max-height: none;
+  padding: 0 14px;
+}
+
+#filebrowser .fb-diskinfo-outer {
+  position: relative;
+  right: auto;
+  bottom: auto;
+  margin-left: auto;
+  background: transparent;
+}
+
+#filebrowser .fb-diskinfo-inner {
+  color: var(--text-2);
+}
+
+/* stays position:fixed like the original, so the header's overflow:hidden can't clip it;
+   shifted left so it ends under the (i) icon instead of running off the right edge */
+#filebrowser .fb-diskinfo {
+  position: fixed;
+  margin-top: 28px;
+  transform: translateX(calc(-100% + 22px));
+  z-index: 30;
+  height: auto;
+  padding: 6px 10px;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow);
+}
+
+#filebrowser .fb-driveselector {
+  font: inherit;
+  font-size: 15px;
+  font-weight: 650;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 5px 8px;
+}
+
+#filebrowser .fb-crumb {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+#filebrowser .fb-crumb:hover {
+  text-decoration: underline;
+}
+
+#filebrowser .fb-crumbsep {
+  margin: 0 4px;
+  color: var(--text-2);
+  font-weight: 500;
+}
+
+/* folder tree */
+
+#filebrowser .fb-tree {
+  padding: 6px 8px 12px 24px;
+  margin: 0;
+}
+
+#filebrowser .fb-tree ul {
+  padding-left: 18px;
+}
+
+#filebrowser .fb-tree summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: auto;
+  padding: 7px 8px;
+  margin: 1px 0;
+  border-radius: 8px;
+  color: var(--text);
+  font-weight: 550;
+  font-size: 14px;
+}
+
+#filebrowser .fb-tree summary:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+  border-radius: 8px;
+}
+
+/* the expander: a chevron that turns when the folder is open */
+#filebrowser .fb-tree summary::before,
+#filebrowser .fb-tree summary:has(+ ul:not(:empty))::before,
+#filebrowser .fb-tree details[open] > summary:has(+ ul:not(:empty))::before {
+  top: 9px;
+  left: -18px;
+  width: 16px;
+  height: 16px;
+  border-radius: 0;
+  background: var(--text-2);
+  -webkit-mask: var(--ico-chevron) center / contain no-repeat;
+  mask: var(--ico-chevron) center / contain no-repeat;
+  transition: transform 0.15s;
+}
+
+#filebrowser .fb-tree summary:not(:has(+ ul:not(:empty)))::before {
+  opacity: 0.35;
+}
+
+#filebrowser .fb-tree details[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+/* the folder icon inside the label */
+#filebrowser .fb-tree summary::after {
+  content: "";
+  order: -1;
+  width: 18px;
+  height: 18px;
+  flex: none;
+  background: var(--accent);
+  -webkit-mask: var(--ico-folder) center / contain no-repeat;
+  mask: var(--ico-folder) center / contain no-repeat;
+}
+
+/* the splitter between the tree and the list */
+
+#filebrowser .fb-splitter {
+  width: 6px;
+  margin-left: -3px;
+  margin-right: -3px;
+  background: transparent;
+  border: none;
+  z-index: 1;
+}
+
+#filebrowser .fb-splitter:hover {
+  background: var(--accent-soft);
+}
+
+#filebrowser .fb-splitterflag {
+  width: 8px;
+  height: 40px;
+  border: none;
+  border-radius: 999px;
+  background: var(--border);
+  margin-left: 4px;
+}
+
+/* the file list */
+
+#filebrowser .fb-fileslist {
+  margin: 0;
+  padding: 6px 8px 96px;
+}
+
+#filebrowser .fb-direntry,
+#filebrowser .fb-fileentry {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: auto;
+  min-height: 42px;
+  box-sizing: border-box;
+  margin: 1px 0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  color: var(--text);
+  font-size: 14.5px;
+  font-weight: 500;
+  word-break: break-word;
+}
+
+#filebrowser .fb-direntry {
+  font-weight: 600;
+}
+
+#filebrowser .fb-direntry:hover:not([contenteditable="true"]),
+#filebrowser .fb-fileentry:hover:not([contenteditable="true"]) {
+  background: var(--surface-hover);
+  color: var(--text);
+  border-radius: 10px;
+}
+
+#filebrowser .fb-direntry.fb-selected,
+#filebrowser .fb-fileentry.fb-selected,
+#filebrowser .fb-direntry.fb-selected:hover:not([contenteditable="true"]),
+#filebrowser .fb-fileentry.fb-selected:hover:not([contenteditable="true"]) {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+#filebrowser [contenteditable="true"] {
+  outline: 2px solid var(--accent);
+  background: var(--surface);
+}
+
+#filebrowser .fb-direntry::before,
+#filebrowser .fb-fileentry::before {
+  content: "";
+  width: 22px;
+  height: 22px;
+  flex: none;
+  background: var(--text-2);
+  -webkit-mask: var(--ico-file) center / contain no-repeat;
+  mask: var(--ico-file) center / contain no-repeat;
+}
+
+#filebrowser .fb-direntry::before {
+  background: var(--accent);
+  -webkit-mask-image: var(--ico-folder);
+  mask-image: var(--ico-folder);
+}
+
+#filebrowser .fb-fileentry:is([data-fullpath$=".wav" i], [data-fullpath$=".mp3" i], [data-fullpath$=".m4a" i],
+                               [data-fullpath$=".flac" i], [data-fullpath$=".ogg" i])::before {
+  background: #8b5cf6;
+  -webkit-mask-image: var(--ico-audio);
+  mask-image: var(--ico-audio);
+}
+
+#filebrowser .fb-fileentry:is([data-fullpath$=".mp4" i], [data-fullpath$=".mov" i])::before {
+  background: var(--bad);
+  -webkit-mask-image: var(--ico-video);
+  mask-image: var(--ico-video);
+}
+
+#filebrowser .fb-fileentry:is([data-fullpath$=".png" i], [data-fullpath$=".jpg" i], [data-fullpath$=".jpeg" i])::before {
+  background: var(--ok);
+  -webkit-mask-image: var(--ico-image);
+  mask-image: var(--ico-image);
+}
+
+#filebrowser .fb-fileentry[data-fullpath$=".fseq" i]::before {
+  background: var(--warn);
+  -webkit-mask-image: var(--ico-lights);
+  mask-image: var(--ico-lights);
+}
+
+/* the file's size, at the end of the row */
+#filebrowser .fb-fileentry[data-size]::after {
+  content: attr(data-size);
+  margin-left: auto;
+  padding-left: 12px;
+  flex: none;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-2);
+}
+
+#filebrowser .fb-selection-rect {
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+}
+
+/* drop targets while dragging */
+
+#filebrowser .fb-direntry.fb-droptarget,
+#filebrowser .fb-fileentry.fb-droptarget,
+#filebrowser summary.fb-droptarget {
+  color: var(--text);
+  background: var(--ok-soft);
+  border-color: var(--ok);
+  box-shadow: none;
+  clip-path: none;
+}
+
+#filebrowser .fb-fileslist.fb-droptarget,
+#filebrowser details > ul.fb-droptarget {
+  box-shadow: inset 0 0 0 2px var(--ok);
+}
+
+/* the action bar (upload, new folder, and actions for the selection) */
+
+#filebrowser .fb-buttonbar {
+  bottom: calc(20px + var(--bottomnav-h));
+  right: 20px;
+  height: auto;
+  display: flex;
+  gap: 4px;
+  padding: 6px;
+  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 24px rgba(16, 24, 40, 0.16);
+}
+
+#filebrowser .fb-barbutton {
+  float: none;
+}
+
+#filebrowser .fb-barbutton.fb-visiblebarbutton {
+  display: inline-flex;
+  align-items: center;
+  width: auto;
+  height: 40px;
+  padding: 0 12px 0 38px;
+  border-radius: 10px;
+  background-size: 20px 20px;
+  background-position: 10px center;
+  background-repeat: no-repeat;
+  color: var(--text);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+#filebrowser .fb-barbutton.fb-visiblebarbutton:hover {
+  background-color: var(--surface-hover);
+}
+
+#filebrowser .fb-uploadbutton::after { content: "Upload"; }
+#filebrowser .fb-newfolderbutton::after { content: "New folder"; }
+#filebrowser .fb-downloadbutton::after { content: "Download"; }
+#filebrowser .fb-pencilbutton::after { content: "Rename"; }
+#filebrowser .fb-locksoundbutton::after { content: "Use as lock sound"; }
+#filebrowser .fb-trashbutton::after { content: "Delete"; color: var(--bad); }
 
 @media (prefers-color-scheme: dark) {
-  .fb-treediv,
-  .fb-filesdiv,
-  .fb-diskinfo-outer {
-    background: var(--surface) !important;
-    color: var(--text);
+  /* the bar icons are black SVG files */
+  #filebrowser .fb-barbutton {
+    background-blend-mode: normal;
   }
 
-  .fb-tree summary,
-  .fb-fileentry,
-  .fb-direntry,
-  .fb-treerootpath,
-  .fb-dirpath {
-    color: var(--text);
+  #filebrowser .fb-barbutton.fb-visiblebarbutton {
+    background-image: none !important;
+    position: relative;
   }
 
-  .fb-crumb {
-    color: var(--accent);
+  #filebrowser .fb-barbutton.fb-visiblebarbutton::before {
+    content: "";
+    position: absolute;
+    left: 10px;
+    top: 10px;
+    width: 20px;
+    height: 20px;
+    background: var(--text);
+    -webkit-mask: var(--bar-icon) center / contain no-repeat;
+    mask: var(--bar-icon) center / contain no-repeat;
   }
 
-  .fb-fileentry.fb-selected,
-  .fb-direntry.fb-selected {
-    color: var(--text);
-    background: var(--accent-soft);
+  #filebrowser .fb-uploadbutton { --bar-icon: url(icons/upload.svg); }
+  #filebrowser .fb-newfolderbutton { --bar-icon: url(icons/newfolder.svg); }
+  #filebrowser .fb-downloadbutton { --bar-icon: url(icons/download.svg); }
+  #filebrowser .fb-pencilbutton { --bar-icon: url(icons/pencil.svg); }
+  #filebrowser .fb-locksoundbutton { --bar-icon: url(icons/locksound.svg); }
+  #filebrowser .fb-trashbutton { --bar-icon: url(icons/trash.svg); }
+}
+
+/* upload progress, the right-click menu and the audio player */
+
+#filebrowser .fb-dropinfo {
+  width: min(380px, calc(100vw - 32px));
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+}
+
+#filebrowser .fb-dropinfo-closebutton {
+  background: transparent;
+  color: var(--text-2);
+}
+
+#filebrowser .fb-dropinfo-progress {
+  accent-color: var(--accent);
+}
+
+.cm-menu {
+  min-width: 200px;
+  width: auto;
+  padding: 5px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: 0 12px 32px rgba(16, 24, 40, 0.18);
+}
+
+.cm-item {
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.cm-item:hover {
+  background: var(--surface-hover);
+}
+
+.fb-player {
+  border-radius: 18px !important;
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+}
+
+.fb-playertitle {
+  color: var(--text) !important;
+}
+
+/* phones: no tree; the drive header, then the folder path and the list, full width */
+@media screen and (max-width: 824px) {
+  #filebrowser {
+    flex-direction: column;
   }
 
-  .fb-diskinfo-inner {
-    color: var(--text-2);
+  #filebrowser .fb-treediv {
+    width: 100% !important;
+    max-width: none;
+    height: auto;
+    flex: none;
+    border-right: none;
   }
 
-  .fb-diskinfo {
-    background: var(--surface-2);
-    border-color: var(--border);
+  #filebrowser .fb-tree,
+  #filebrowser .fb-splitter,
+  #filebrowser .fb-splitterflag {
+    display: none;
   }
 
-  .fb-splitter,
-  .fb-splitterflag {
-    background: var(--surface-2);
-    border-color: var(--border);
+  #filebrowser .fb-filesdiv {
+    flex: 1;
+    min-height: 0;
+    height: auto;
+  }
+
+  #filebrowser .fb-buttonbar {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    bottom: calc(12px + var(--bottomnav-h));
+    max-width: calc(100vw - 24px);
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  /* icons only, so all the actions fit */
+  #filebrowser .fb-barbutton.fb-visiblebarbutton {
+    width: 44px;
+    padding: 0;
+    font-size: 0;
+    background-position: center;
+  }
+
+  #filebrowser .fb-barbutton.fb-visiblebarbutton::after {
+    content: none;
+  }
+}
+
+@media screen and (max-width: 824px) and (prefers-color-scheme: dark) {
+  #filebrowser .fb-barbutton.fb-visiblebarbutton::before {
+    left: 12px;
   }
 }
 

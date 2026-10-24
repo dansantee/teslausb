@@ -3,7 +3,7 @@
   "private": true,
   "description": "Browser tests for the TeslaUSB web UI",
   "scripts": {
-    "test": "node --test --test-concurrency=1 --test-timeout=60000 ui.test.js files.test.js clips.test.js"
+    "test": "node --test --test-concurrency=1 --test-timeout=60000 ui.test.js files.test.js clips.test.js browsers.test.js"
   },
   "devDependencies": {
     "playwright-core": "1.64.1"

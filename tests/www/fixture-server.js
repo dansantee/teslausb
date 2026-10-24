@@ -63,6 +63,34 @@ function lsOutput(drive, dir) {
   return lines.join('\n') + '\n';
 }
 
+// The listing nginx's fancyindex module serves for a /TeslaCam/ folder (markup taken from the
+// module on the Pi), built from the clip list. Sizes are what fancyindex_exact_size off shows.
+function fancyIndex(urlPath, list) {
+  const rel = urlPath.slice('/TeslaCam/'.length);
+  const entries = new Map();
+  for (const line of list.split('\n').filter(Boolean)) {
+    if (!line.startsWith(rel)) continue;
+    const rest = line.slice(rel.length);
+    const [name, ...more] = rest.split('/');
+    entries.set(name, more.length > 0);
+  }
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+  const rows = ['<tr><td class="link"><a href="../">Parent directory/</a></td><td class="size">-</td><td class="date">-</td></tr>'];
+  for (const [name, isDir] of [...entries].sort()) {
+    const href = encodeURIComponent(name) + (isDir ? '/' : '');
+    rows.push(`<tr><td class="link"><a href="${href}" title="${esc(name)}">${esc(name)}${isDir ? '/' : ''}</a></td>` +
+              `<td class="size">${isDir ? '-' : '39.6 MiB'}</td><td class="date">2026-Oct-22 18:40</td></tr>`);
+  }
+  return '<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width"/>' +
+    '<meta http-equiv="content-type" content="text/html; charset=utf-8"/>' +
+    '<link rel="stylesheet" href="/fancyindex.css" type="text/css"/>' +
+    `<title>Index of ${esc(urlPath)}</title></head><body><h1>Index of ${esc(urlPath)}</h1>` +
+    '<table id="list"><thead><tr><th style="width:55%"><a href="?C=N&amp;O=A">File Name</a>&nbsp;<a href="?C=N&amp;O=D">&nbsp;&darr;&nbsp;</a></th>' +
+    '<th style="width:20%"><a href="?C=S&amp;O=A">File Size</a>&nbsp;<a href="?C=S&amp;O=D">&nbsp;&darr;&nbsp;</a></th>' +
+    '<th style="width:25%"><a href="?C=M&amp;O=A">Date</a>&nbsp;<a href="?C=M&amp;O=D">&nbsp;&darr;&nbsp;</a></th></tr></thead>\n<tbody>' +
+    rows.join('\n') + '</tbody></table></body></html>';
+}
+
 // a 1x1 PNG, for clip thumbnails
 const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGNgYGD4DwABBAEAwS2OUAAAAABJRU5ErkJggg==', 'base64');
 
@@ -187,12 +215,8 @@ function startServer({ status = {}, config = 'config-full.json', drive: driveOve
     if (p === '/archiveloop.log' || p === '/teslausb-headless-setup.log' || p === '/diagnostics.txt') {
       return send(200, 'text/plain', 'Fri 23 Oct 11:34:22 CDT 2026: Finished archiving.\n');
     }
-    if (p === '/TeslaCam/') {
-      // shaped like nginx's fancyindex listing, which the Recordings frame tidies up
-      return send(200, 'text/html', '<html><body><table id="list"><tbody>' +
-        '<tr><td><a href="../">Parent directory/</a></td></tr>' +
-        '<tr><td><a href="SavedClips/">SavedClips/</a></td></tr>' +
-        '</tbody></table></body></html>');
+    if (p.startsWith('/TeslaCam/') && p.endsWith('/')) {
+      return send(200, 'text/html', fancyIndex(p, videolist !== null ? videolist : fixture('videolist.txt')));
     }
     if (p.startsWith('/' + DRIVE_ROOT + '/')) {
       const rel = p.slice(DRIVE_ROOT.length + 2);
