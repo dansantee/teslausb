@@ -46,6 +46,9 @@ systemctl disable apt-daily-upgrade.timer
 systemctl disable amlogic-adbd &> /dev/null || true
 systemctl disable radxa-adbd radxa-usbnet &> /dev/null || true
 
+# there's no modem, and ModemManager probes the serial ports, where a Pi's Bluetooth lives
+systemctl mask ModemManager &> /dev/null || true
+
 # don't restore the led state from the time the root fs was made read-only
 systemctl disable armbian-led-state &> /dev/null || true
 

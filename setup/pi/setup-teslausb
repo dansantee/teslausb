@@ -109,7 +109,7 @@ then
   # source the conf file directly to get REPO, BRANCH or download_sources
   # in case they're set
   safesource /root/teslausb_setup_variables.conf
-  REPO=${REPO:-marcone}
+  REPO=${REPO:-dansantee}
   BRANCH=${BRANCH:-main-dev}
   copy_script setup/pi/envsetup.sh "$THISDIR"
 fi
@@ -719,7 +719,7 @@ function diagnose {
       echo "WARNING: /mutable is low on inodes: ${inodes}% used"
     fi
 
-    if [[ "$BRANCH" != "main-dev" || "$REPO" != "marcone" ]]
+    if [[ "$BRANCH" != "main-dev" || "$REPO" != "dansantee" ]]
     then
       echo "WARNING: using $REPO/$BRANCH"
     fi
@@ -904,6 +904,16 @@ then
 fi
 
 configure_hostname
+
+# Wi-Fi power saving makes the Pi slow to answer on the network. This is the default for
+# every connection that doesn't set its own; it takes effect at the reboot that ends setup.
+# It's here, after the subcommands (upgrade, diagnose, ...) have been dispatched, because
+# only a full setup run has a writable root.
+if [ -d /etc/NetworkManager/conf.d ]
+then
+  setup_progress "turning off Wi-Fi power saving"
+  printf '[connection]\nwifi.powersave = 2\n' > /etc/NetworkManager/conf.d/99-wifi-powersave-off.conf
+fi
 
 tmpdir=/tmp/$$
 mkdir -p "$tmpdir"

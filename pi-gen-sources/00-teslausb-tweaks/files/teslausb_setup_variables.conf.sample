@@ -488,8 +488,8 @@ export TEMPERATURE_POSTARCHIVE=true
 #export CPU_GOVERNOR=conservative
 
 # Uncomment and change if you want setup scripts to be pulled
-# from a different repo than github.com/marcone/teslausb
-# export REPO=marcone
+# from a different repo than github.com/dansantee/teslausb
+# export REPO=dansantee
 
 # Uncomment and change if you want a different branch than main-dev
 # export BRANCH=main-dev

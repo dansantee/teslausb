@@ -10,6 +10,11 @@ then
   exit 1
 fi
 
+# where the rest of setup comes from: this fork, unless REPO/BRANCH are set in the environment
+REPO=${REPO:-dansantee}
+BRANCH=${BRANCH:-main-dev}
+RAW="https://raw.githubusercontent.com/$REPO/teslausb/$BRANCH"
+
 if [ ! -L /teslausb ]
 then
   rm -rf /teslausb
@@ -88,11 +93,11 @@ then
     cat <<- EOF > /etc/rc.local
 		#!/bin/bash
 		{
-		  while ! curl -s https://raw.githubusercontent.com/marcone/teslausb/main-dev/setup/generic/install.sh
+		  while ! curl -s $RAW/setup/generic/install.sh
 		  do
 		    sleep 1
 		  done
-		} | bash
+		} | REPO=$REPO BRANCH=$BRANCH bash
 		EOF
     chmod a+x /etc/rc.local
 
@@ -112,7 +117,7 @@ then
     fi
 
     {
-      while ! curl -s https://raw.githubusercontent.com/marcone/teslausb/main-dev/tools/debian-resizefs.sh
+      while ! curl -s "$RAW/tools/debian-resizefs.sh"
       do
         sleep 1
       done
@@ -145,7 +150,7 @@ fi
 # Copy the sample config file from github
 if [ ! -e /teslausb/teslausb_setup_variables.conf ] && [ ! -e /root/teslausb_setup_variables.conf ]
 then
-  while ! curl -o /teslausb/teslausb_setup_variables.conf https://raw.githubusercontent.com/marcone/teslausb/main-dev/pi-gen-sources/00-teslausb-tweaks/files/teslausb_setup_variables.conf.sample
+  while ! curl -o /teslausb/teslausb_setup_variables.conf "$RAW/pi-gen-sources/00-teslausb-tweaks/files/teslausb_setup_variables.conf.sample"
   do
     sleep 1
   done
@@ -154,7 +159,7 @@ fi
 # and the wifi config template
 if [ ! -e /teslausb/wpa_supplicant.conf.sample ]
 then
-  while ! curl -o /teslausb/wpa_supplicant.conf.sample https://raw.githubusercontent.com/marcone/teslausb/main-dev/pi-gen-sources/00-teslausb-tweaks/files/wpa_supplicant.conf.sample
+  while ! curl -o /teslausb/wpa_supplicant.conf.sample "$RAW/pi-gen-sources/00-teslausb-tweaks/files/wpa_supplicant.conf.sample"
   do
     sleep 1
   done
@@ -167,7 +172,7 @@ touch /teslausb/WIFI_ENABLED
 # continue using the regular "one step setup" process used
 # for setting up a Raspberry Pi with the prebuilt image
 rm -f /etc/rc.local
-while ! curl -o /etc/rc.local https://raw.githubusercontent.com/marcone/teslausb/main-dev/pi-gen-sources/00-teslausb-tweaks/files/rc.local
+while ! curl -o /etc/rc.local "$RAW/pi-gen-sources/00-teslausb-tweaks/files/rc.local"
 do
   sleep 1
 done

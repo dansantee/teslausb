@@ -1,5 +1,16 @@
 # teslausb
 
+## This fork
+
+A personal fork of [marcone/teslausb](https://github.com/marcone/teslausb) with a redesigned web UI. Setup installs this fork by default (`REPO` defaults to `dansantee`), turns off Wi-Fi power saving and disables ModemManager. To install it:
+
+1. Flash Raspberry Pi OS Lite (32-bit, Bookworm) with Raspberry Pi Imager, setting the hostname, Wi-Fi (tick "hidden" for a hidden network), user and SSH in its OS customization.
+2. Copy your filled-in [teslausb_setup_variables.conf](pi-gen-sources/00-teslausb-tweaks/files/teslausb_setup_variables.conf.sample) to the card's boot partition.
+3. Boot the Pi, log in, and run `curl -fsSL https://raw.githubusercontent.com/dansantee/teslausb/main-dev/setup/generic/install.sh | sudo bash`. It shrinks the root partition and reboots by itself, and finishes its prep once the Pi is back up.
+4. Reboot (`sudo reboot`). Setup then runs on its own, about 10 minutes on a Pi Zero 2 W, and reboots when finished.
+
+There's no `no-snapshots` branch in this fork, so keep `SNAPSHOTS_ENABLED` at its default.
+
 ## Intro
 
 Raspberry Pi and other [SBCs](## "Single Board Computers") can emulate a USB drive, so can act as a drive for your Tesla to write dashcam footage to. Because the SBC has full access to the emulated drive, it can:
